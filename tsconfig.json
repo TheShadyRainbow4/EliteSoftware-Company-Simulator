@@ -20,7 +20,15 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
+<<<<<<< HEAD
+<<<<<<< HEAD
         "./src/*"
+=======
+        "./*"
+>>>>>>> origin/fix-workflow-vite-11152625370068992454
+=======
+        "./src/*"
+>>>>>>> origin/jules/expand-readme-and-refactor-structure-14704666400517355707
       ]
     },
     "allowImportingTsExtensions": true,
