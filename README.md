@@ -82,6 +82,21 @@ The simulation is a rich, interactive experience packed with features designed t
 
 
 
+<!-- TECH STACK SECTION -->
+
+
+
+## **💻 Tech Stack**
+
+* **Frontend Framework:** React 19 + TypeScript
+* **Build Tool:** Vite
+* **Desktop Runtime:** Electron
+* **Styling:** Tailwind CSS
+* **AI Integration:** Google Gemini API via `@google/genai` SDK
+* **State Management:** React Hooks + Local Storage
+
+
+
 <!-- PROMO IMAGE SECTION -->
 
 
@@ -180,6 +195,23 @@ Ready to clock in? Here’s how to get the simulation running on your local mach
 
 
 
+<!-- PROJECT STRUCTURE SECTION -->
+
+
+
+## **📂 Project Structure**
+
+Here's a quick overview of how the codebase is organized:
+
+*   **`components/`**: Contains all the React components that make up the UI (e.g., `InboxView`, `InstantMessengerView`, `BootSequence`).
+*   **`hooks/`**: Custom React hooks, primarily `useLocalStorage` for persisting state.
+*   **`services/`**: Handles external service integrations, specifically the `geminiService` for AI interactions.
+*   **`components/icons/`**: A collection of custom SVG icon components used throughout the application.
+*   **`main.cjs`**: The entry point for the Electron main process.
+*   **`preload.cjs`**: The Electron preload script that securely bridges the main process and the renderer.
+
+
+
 <!-- VIBE CODING NOTE SECTION -->
 
 
@@ -203,3 +235,27 @@ Expect the unexpected. Embrace the chaos. And have fun!
 &nbsp;&nbsp;&nbsp;&nbsp;
 <a href='https://i.postimg.cc/85mKDbX8/Elite-Software-Company-Logo.png' target='_blank'><img src='https://i.postimg.cc/85mKDbX8/Elite-Software-Company-Logo.png' border='0' alt='Elite-Software-LOGO' width="250"></a>
 </div>
+
+
+
+<!-- LICENSE SECTION -->
+
+
+
+## **📝 License**
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+
+
+<!-- ACKNOWLEDGMENTS SECTION -->
+
+
+
+## **🙏 Acknowledgments**
+
+*   [Electron](https://www.electronjs.org/)
+*   [React](https://reactjs.org/)
+*   [Vite](https://vitejs.dev/)
+*   [Tailwind CSS](https://tailwindcss.com/)
+*   [Google AI Studio](https://aistudio.google.com/)
