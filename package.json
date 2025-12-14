@@ -1,5 +1,6 @@
 {
   "name": "elitesoftware-client",
+  "description": "EliteSoftware Client Application",
   "private": true,
   "version": "1.0.0",
   "type": "module",
