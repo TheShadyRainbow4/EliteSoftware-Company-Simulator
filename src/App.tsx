@@ -24,6 +24,9 @@ import { INITIAL_GAME_STATE } from './initialData';
 import BootSequence from './components/BootSequence';
 import RelationshipsView from './components/RelationshipsView';
 
+// Ensure Tailwind works with this project structure by importing index.css if it exists or assuming CDN
+// import './index.css';
+
 type Theme = 'light' | 'dark';
 
 const COMPANY_SOCIAL_PROFILE_EMAIL = 'company@elitesoftware.tech';
