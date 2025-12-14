@@ -1,6 +1,9 @@
 {
   "name": "elitesoftware-client",
+<<<<<<< HEAD
   "description": "EliteSoftware Client Application",
+=======
+>>>>>>> origin/jules/expand-readme-and-refactor-structure-14704666400517355707
   "private": true,
   "version": "1.0.0",
   "type": "module",

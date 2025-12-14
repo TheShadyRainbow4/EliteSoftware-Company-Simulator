@@ -17,7 +17,15 @@ export default defineConfig(({ mode }) => {
       },
       resolve: {
         alias: {
+<<<<<<< HEAD
+<<<<<<< HEAD
           '@': path.resolve(__dirname, 'src'),
+=======
+          '@': path.resolve(__dirname, '.'),
+>>>>>>> origin/fix-workflow-vite-11152625370068992454
+=======
+          '@': path.resolve(__dirname, 'src'),
+>>>>>>> origin/jules/expand-readme-and-refactor-structure-14704666400517355707
         }
       }
     };

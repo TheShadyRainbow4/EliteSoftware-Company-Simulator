@@ -1,8 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Coworker, Thread, Email, User, ThreadStatus, Project, CompanyProfile, IMConversation, IMMessage, AiIMResponse, AiEmailActionResponse, Event, GeneratedCoworker, Role, GeneratedProject, GeneratedEvent } from '../types';
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY;
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const textModel = 'gemini-2.5-flash';
 const imageModel = 'imagen-3.0-generate-002';
 
@@ -92,10 +91,10 @@ const formatParticipantsForPrompt = (participants: (Coworker | User)[]): string 
     if (p.reportsTo) {
         baseDetails += `\nReports To: ${p.reportsTo}`;
     }
-    
+
     // Check for Coworker or User with family/relationships
     const contactWithDetails = p as (Coworker & User);
-    
+
     let personalityDetails = ('personality' in contactWithDetails) ? `Personality: ${contactWithDetails.personality}` : '';
 
     if (contactWithDetails.family) {
@@ -156,8 +155,8 @@ To do this, use the \`CREATE_EVENT\` action with the following payload:
 1.  \`CREATE_EVENT\` (Public): Create a public company calendar event. The payload must include \`{title, description, start, end, allDay}\`.
 2.  \`SEND_EMAIL\`: Sends a new email on behalf of the user. The payload must include \`{to, subject, body}\`.
 If you perform an action, your reply should confirm that you have completed the task.
-` : ``; 
-    
+` : ``;
+
     return deadlineInstructions + adminOnlyInstructions;
 }
 
@@ -187,18 +186,18 @@ export const generateReply = async (thread: Thread, participants: (Coworker | Us
     const threadHistory = formatThreadForPrompt(thread);
     const lastEmail = thread.emails[thread.emails.length - 1];
 
-    const potentialResponders = participants.filter(p => 
-        p.email !== lastSender.email && 
+    const potentialResponders = participants.filter(p =>
+        p.email !== lastSender.email &&
         thread.participants.includes(p.email) &&
         'personality' in p // Ensure it's an AI coworker
     ) as Coworker[];
-    
+
     if (potentialResponders.length === 0) {
         return null;
     }
 
     const nextSender = potentialResponders[Math.floor(Math.random() * potentialResponders.length)];
-    
+
     const actionInstructions = getTaskAndActionInstructions(nextSender);
     const participantsPrompt = formatParticipantsForPrompt(participants);
     const prompt = `
@@ -237,7 +236,7 @@ Your JSON response:
                 responseSchema: emailActionResponseSchema,
             },
         });
-        
+
         const jsonText = response.text;
         return JSON.parse(jsonText) as AiEmailActionResponse;
 
@@ -284,10 +283,10 @@ Respond with a single JSON object for this one email, matching the defined schem
                 responseSchema: emailResponseSchema,
             },
         });
-        
+
         const jsonText = response.text;
         const generatedEmail = JSON.parse(jsonText) as Omit<Email, 'id' | 'timestamp'>;
-        
+
         const email: Email = {
             ...generatedEmail,
             id: `email-proj-kickoff-${Date.now()}`,
@@ -297,7 +296,7 @@ Respond with a single JSON object for this one email, matching the defined schem
         const threadId = `thread-proj-${Date.now()}`;
         const allParticipants = Array.from(new Set([email.from, ...email.to, ...(email.cc || []), ...(email.bcc || [])]));
         const userStatuses = Object.fromEntries(allParticipants.map(pEmail => [pEmail, ThreadStatus.Active]));
-        
+
         return {
             id: threadId,
             emails: [email],
@@ -330,7 +329,7 @@ This email creates "chatter" and helps develop relationships.
     *   Ask about a mutual hobby.
     *   Reference one of the company rules in a funny or casual way.
     *   Mention something about your family (e.g., kids, spouse, pets).
-3.  **Address it correctly:** 
+3.  **Address it correctly:**
     *   The email is from you (${sender.email}) directly to ${recipient.email}.
     *   ${ccRecipient ? `You MUST CC the administrator, ${ccRecipient.name} (${ccRecipient.email}). This is to keep them in the loop.` : 'Do not CC or BCC anyone.'}
 4.  **Format:** Your subject line should be casual (e.g., "Quick question," "Random thought," "Coffee?"). Use your signature exactly as provided.
@@ -350,7 +349,7 @@ Respond with a single JSON object for this one email, matching the defined schem
                 responseSchema: emailResponseSchema,
             },
         });
-        
+
         const jsonText = response.text;
         const generatedEmail: Omit<Email, 'id' | 'timestamp'> = JSON.parse(jsonText);
 
@@ -358,7 +357,7 @@ Respond with a single JSON object for this one email, matching the defined schem
         generatedEmail.from = sender.email;
         generatedEmail.cc = ccRecipient ? [ccRecipient.email] : [];
         generatedEmail.bcc = [];
-        
+
         const email: Email = { ...generatedEmail, id: `email-spontaneous-${Date.now()}`, timestamp: Date.now() };
         const participants = [sender.email, recipient.email, ...(ccRecipient ? [ccRecipient.email] : [])];
         const userStatuses = Object.fromEntries(participants.map(p => [p, ThreadStatus.Active]));
@@ -412,7 +411,7 @@ Respond with a single JSON object for this one email, matching the defined schem
                 responseSchema: emailActionResponseSchema,
             },
         });
-        
+
         const jsonText = response.text;
         return JSON.parse(jsonText) as AiEmailActionResponse;
     } catch(e) {
@@ -452,11 +451,11 @@ ${threadHistory}
 ---
 
 **Instructions:**
-1.  **Analyze the Brief:** Read the project brief carefully. 
+1.  **Analyze the Brief:** Read the project brief carefully.
     - If the brief mentions creating a **script, code, or function (e.g., PowerShell, Python, JavaScript)**, your primary goal is to **write a piece of that code**. Your contribution must be functional and directly related to the brief. Wrap the code in markdown fences like \`\`\`powershell ... \`\`\`.
     - If the brief is non-technical, provide a meaningful progress update, a list of action items you've completed, or a well-developed idea that moves the project forward.
 2.  **Collaborate:** Your email body should mention collaborating with your fellow AI teammates (${otherAiMembers.map(m => m.name).join(', ')}). Your tone should reflect your relationships with them.
-3.  **Address it correctly:** 
+3.  **Address it correctly:**
     - The email is from you: ${sender.email}.
     - Send it to all project members: ${allMembers.map(m=>m.email).filter(e => e !== sender.email).join(', ')}.
     - If you have a supervisor (${supervisor?.name}), CC them.
@@ -476,7 +475,7 @@ Respond with a single JSON object for this one email, matching the defined schem
                 responseSchema: emailActionResponseSchema,
             },
         });
-        
+
         return JSON.parse(response.text) as AiEmailActionResponse;
 
     } catch (error) {
@@ -512,7 +511,7 @@ ${threadHistory}
 ---
 
 **Instructions:**
-1.  **Summarize & Complete:** Review the project brief and email history. 
+1.  **Summarize & Complete:** Review the project brief and email history.
     - If the project involved creating a **script, code, or function**, your main goal is to provide the **complete, final version of that code**. Wrap it in markdown fences.
     - If it was non-technical, write a comprehensive summary of the project's outcome and key deliverables.
 2.  **Write the Email:**
@@ -534,7 +533,7 @@ Respond with a single JSON object for this one email, matching the defined schem
                 responseSchema: emailActionResponseSchema,
             },
         });
-        
+
         return JSON.parse(response.text) as AiEmailActionResponse;
 
     } catch (error) {
@@ -579,7 +578,7 @@ Respond with a single JSON object, matching the defined schema.
                 responseSchema: emailActionResponseSchema,
             },
         });
-        
+
         return JSON.parse(response.text) as AiEmailActionResponse;
     } catch (error) {
         console.error('Error generating task completion email:', error);
@@ -588,17 +587,17 @@ Respond with a single JSON object, matching the defined schema.
 };
 
 export const generateIMReply = async (
-    conversation: IMConversation, 
-    messages: IMMessage[], 
-    allParticipants: (User | Coworker)[], 
+    conversation: IMConversation,
+    messages: IMMessage[],
+    allParticipants: (User | Coworker)[],
     companyProfile: CompanyProfile,
     replyingAi: Coworker
 ): Promise<AiIMResponse | null> => {
-    
+
     const conversationParticipants = conversation.participantEmails
         .map(email => allParticipants.find(p => p.email === email))
         .filter((p): p is User | Coworker => !!p);
-    
+
     const participantsPrompt = formatParticipantsForPrompt(conversationParticipants);
 
     const messageHistory = messages.map(msg => {
@@ -635,8 +634,8 @@ Your JSON response as ${replyingAi.name}:
 `;
 
     try {
-        const response = await ai.models.generateContent({ 
-            model: textModel, 
+        const response = await ai.models.generateContent({
+            model: textModel,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -656,10 +655,10 @@ export const generateSocialMediaPost = async (
     companyProfile: CompanyProfile,
     highEngagement: boolean
 ): Promise<{content: string} | null> => {
-    
+
     const isBrenda = coworker.email === 'brenda.miller@elitesoftware.tech';
     const isCompany = coworker.name === 'EliteSoftware Co. Limited';
-    
+
     let postTopic: string;
     if (isCompany) {
         postTopic = `You are posting on behalf of the company, 'EliteSoftware Co. Limited'. Post a professional but engaging announcement about a new initiative, a company success, or a positive piece of corporate news. Use hashtags.`;
@@ -689,8 +688,8 @@ Your JSON response as ${coworker.name}:
 `;
 
     try {
-        const response = await ai.models.generateContent({ 
-            model: textModel, 
+        const response = await ai.models.generateContent({
+            model: textModel,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -711,7 +710,7 @@ export const generateSocialMediaComment = async (
     comments: { authorName: string, content: string }[],
     companyProfile: CompanyProfile
 ): Promise<{content: string} | null> => {
-    
+
     const commentsHistory = comments.map(c => `- ${c.authorName}: "${c.content}"`).join('\n');
     const engagementInstruction = post.highEngagement ? "This is a high-engagement post. Write a more detailed and thoughtful comment." : "Keep the comment brief, like a real social media comment.";
 
@@ -741,8 +740,8 @@ Your JSON response as ${commenter.name}:
 `;
 
     try {
-        const response = await ai.models.generateContent({ 
-            model: textModel, 
+        const response = await ai.models.generateContent({
+            model: textModel,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -781,8 +780,8 @@ const generatedCoworkerSchema = {
                 required: ['relation', 'name']
             }
         },
-        relationships: { 
-            type: Type.ARRAY, 
+        relationships: {
+            type: Type.ARRAY,
             description: 'Optional. An array describing relationships with 1-2 existing staff members.',
             items: {
                 type: Type.OBJECT,
@@ -798,7 +797,7 @@ const generatedCoworkerSchema = {
 };
 
 export const generateNewCoworkerProfile = async (
-    existingStaff: (User | Coworker)[], 
+    existingStaff: (User | Coworker)[],
     roles: Role[],
     companyProfile: CompanyProfile
 ): Promise<GeneratedCoworker | null> => {
@@ -831,8 +830,8 @@ Your JSON response:
 `;
 
     try {
-        const response = await ai.models.generateContent({ 
-            model: textModel, 
+        const response = await ai.models.generateContent({
+            model: textModel,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -852,8 +851,8 @@ const generatedProjectSchema = {
     properties: {
         name: { type: Type.STRING, description: 'A creative and plausible-sounding corporate project name (e.g., "Project Nightingale", "Q4 Synergy Initiative").' },
         brief: { type: Type.STRING, description: 'A short, clear project brief (2-3 sentences) explaining the goal.' },
-        memberEmails: { 
-            type: Type.ARRAY, 
+        memberEmails: {
+            type: Type.ARRAY,
             description: 'An array of email addresses for 3-5 suitable project members chosen from the existing staff list.',
             items: { type: Type.STRING }
         },
@@ -862,7 +861,7 @@ const generatedProjectSchema = {
 };
 
 export const generateNewProjectIdea = async (
-    existingStaff: (User | Coworker)[], 
+    existingStaff: (User | Coworker)[],
     companyProfile: CompanyProfile
 ): Promise<GeneratedProject | null> => {
     const staffList = existingStaff.map(s => `- ${s.name} (${s.email}) - Role: ${s.role}`).join('\n');
@@ -885,8 +884,8 @@ ${staffList}
 Your JSON response:
 `;
     try {
-        const response = await ai.models.generateContent({ 
-            model: textModel, 
+        const response = await ai.models.generateContent({
+            model: textModel,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -927,8 +926,8 @@ You are an HR coordinator at EliteSoftware planning a company event.
 Your JSON response:
 `;
     try {
-        const response = await ai.models.generateContent({ 
-            model: textModel, 
+        const response = await ai.models.generateContent({
+            model: textModel,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
